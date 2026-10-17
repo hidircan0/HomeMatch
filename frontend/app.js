@@ -1,10 +1,62 @@
 const API = "/api";
-const state = { type: "looking_for_room", token: localStorage.getItem("homematch_token"), user: null, lang: localStorage.getItem("homematch_lang") || "tr" };
+const storedLanguage = localStorage.getItem("homematch_lang");
+const state = { type: "looking_for_room", token: localStorage.getItem("homematch_token"), user: null, lang: storedLanguage === "en" ? "en" : "tr", activePostId: null };
 const words = {
-  tr: { room:"Ev arıyorum", mate:"Ev arkadaşı arıyorum", city:"İl", district:"İlçe", budget:"Aylık kişi payı üst sınırı", search:"İlanları bul", title:"İyi bir ev, iyi bir ev arkadaşıyla başlar.", intro:"Kendine uygun evi ya da ev arkadaşını bul. Önce tanış, sonra birlikte karar ver.", signup:"Üye ol", login:"Giriş yap", logout:"Çıkış", create:"İlan oluştur", saved:"Kaydedilenler", inbox:"Mesajlar", mine:"İlanlarım", no:"Bu aramada henüz ilan yok.", loading:"İlanlar yükleniyor…", error:"Bir sorun oluştu.", type:"İlan türü", name:"Adın", email:"E-posta", password:"Parola (en az 10 karakter)", bio:"Kendini tanıt (en az 20 karakter)", posttitle:"İlan başlığı", desc:"İlan açıklaması", date:"Taşınma / müsaitlik tarihi", amount:"Aylık bütçen (₺)", share:"Kişi başı aylık kira (₺)", cityname:"İstanbul", districtname:"Kadıköy", submit:"Kaydet", cancel:"Vazgeç", detail:"İlan detayı", profile:"Tanıtım", needlogin:"Tanıtımı görmek için giriş yap.", message:"Mesaj gönder", match:"Uyumları bul", noresult:"Henüz uygun eşleşme yok.", utilities:"Faturalar hakkında", roomtype:"Oda tipi (ör. 2+1)", people:"Evde toplam kişi", photos:"Ev fotoğrafları (en fazla 5)", smoke:"Sigara kullanıyor musun?", pets:"Evcil hayvanın var mı?", smoking_allowed:"Evde sigaraya izin var mı?", pets_allowed:"Evcil hayvana izin var mı?", sleep:"Uyku düzeni", clean:"Temizlik beklentisi", guests:"Misafir sıklığı", early:"Erken", night:"Geç saatler", flexible:"Esnek", tidy:"Düzenli", average:"Ortalama", relaxed:"Rahat", rare:"Nadiren", sometimes:"Ara sıra", often:"Sık", yes:"Evet", no2:"Hayır", published:"İlanın yayınlandı.", matchscore:"uyum", send:"Gönder", message_placeholder:"Mesajını yaz…", none:"Henüz içerik yok.", peoplelabel:"Sana uygun kişiler", close:"Yayından kaldır", reopen:"Yeniden yayınla", all:"Aylık pay", roomsearch:"Ev arayanlar", matesearch:"Ev arkadaşı arayanlar" },
-  en: { room:"Looking for a home", mate:"Looking for a flatmate", city:"City", district:"District", budget:"Monthly share limit", search:"Find listings", title:"A good home starts with a good flatmate.", intro:"Find a home or a flatmate that fits you. Get to know each other, then decide together.", signup:"Join", login:"Log in", logout:"Log out", create:"Create listing", saved:"Saved", inbox:"Messages", mine:"My listings", no:"No listings match yet.", loading:"Loading listings…", error:"Something went wrong.", type:"Listing type", name:"Your name", email:"Email", password:"Password (at least 10 characters)", bio:"Introduce yourself (at least 20 characters)", posttitle:"Listing title", desc:"Listing description", date:"Move-in / available date", amount:"Your monthly budget (₺)", share:"Monthly share per person (₺)", cityname:"Istanbul", districtname:"Kadikoy", submit:"Save", cancel:"Cancel", detail:"Listing details", profile:"Introduction", needlogin:"Log in to view the introduction.", message:"Send a message", match:"Find matches", noresult:"No suitable matches yet.", utilities:"Bills information", roomtype:"Room type (e.g. 2+1)", people:"People in the home", photos:"Home photos (up to 5)", smoke:"Do you smoke?", pets:"Do you have pets?", smoking_allowed:"Is smoking allowed at home?", pets_allowed:"Are pets allowed?", sleep:"Sleep schedule", clean:"Cleanliness preference", guests:"Guest frequency", early:"Early", night:"Night owl", flexible:"Flexible", tidy:"Tidy", average:"Average", relaxed:"Relaxed", rare:"Rarely", sometimes:"Sometimes", often:"Often", yes:"Yes", no2:"No", published:"Your listing is live.", matchscore:"match", send:"Send", message_placeholder:"Write a message…", none:"Nothing here yet.", peoplelabel:"PEOPLE TO MATCH WITH", close:"Close listing", reopen:"Publish again", all:"Monthly share", roomsearch:"People looking for a home", matesearch:"People looking for a flatmate" }
+  tr: { room:"Ev arıyorum", mate:"Ev arkadaşı arıyorum", city:"İl", district:"İlçe", budget:"Aylık kişi payı üst sınırı", search:"İlanları bul", title:"İyi bir ev, iyi bir ev arkadaşıyla başlar.", intro:"Kendine uygun evi ya da ev arkadaşını bul. Önce tanış, sonra birlikte karar ver.", signup:"Üye ol", login:"Giriş yap", logout:"Çıkış", create:"İlan oluştur", saved:"Kaydedilenler", inbox:"Mesajlar", mine:"İlanlarım", no:"Bu aramada henüz ilan yok.", loading:"İlanlar yükleniyor…", error:"Bir sorun oluştu.", type:"İlan türü", name:"Adın", email:"E-posta", password:"Parola (en az 10 karakter)", bio:"Kendini tanıt (en az 20 karakter)", posttitle:"İlan başlığı", desc:"İlan açıklaması", date:"Taşınma / müsaitlik tarihi", amount:"Aylık bütçen (₺)", share:"Kişi başı aylık kira (₺)", cityname:"İstanbul", districtname:"Kadıköy", submit:"Kaydet", cancel:"Vazgeç", detail:"İlan detayı", profile:"Tanıtım", needlogin:"Tanıtımı görmek için giriş yap.", message:"Mesaj gönder", match:"Uyumları bul", noresult:"Henüz uygun eşleşme yok.", utilities:"Faturalar hakkında", roomtype:"Oda tipi (ör. 2+1)", people:"Evde toplam kişi", photos:"Ev fotoğrafları (en fazla 5)", smoke:"Sigara kullanıyor musun?", pets:"Evcil hayvanın var mı?", smoking_allowed:"Evde sigaraya izin var mı?", pets_allowed:"Evcil hayvana izin var mı?", sleep:"Uyku düzeni", clean:"Temizlik beklentisi", guests:"Misafir sıklığı", early:"Erken", night:"Geç saatler", flexible:"Esnek", tidy:"Düzenli", average:"Ortalama", relaxed:"Rahat", rare:"Nadiren", sometimes:"Ara sıra", often:"Sık", yes:"Evet", no2:"Hayır", published:"İlanın yayınlandı.", matchscore:"uyum", send:"Gönder", message_placeholder:"Mesajını yaz…", none:"Henüz içerik yok.", peoplelabel:"Sana uygun kişiler", close:"Yayından kaldır", reopen:"Yeniden yayınla", all:"Aylık pay", roomsearch:"Ev arayanlar", matesearch:"Ev arkadaşı arayanlar", eyebrow:"Birlikte yaşamak daha kolay", headline:"İyi bir ev, iyi bir ev arkadaşıyla başlar.", subhead:"Kendine uygun evi ya da ev arkadaşını bul. Önce tanış, sonra birlikte karar ver.", tab_room:"Ev arıyorum", tab_roommate:"Ev arkadaşı arıyorum", max_budget:"Aylık kişi payı üst sınırı", latest:"Sana uygun kişiler", create_post:"İlan oluştur", footer:"Ev arkadaşı bulmanın daha iyi bir yolu.", detected:"İlan dili", translate:"Türkçeye çevir", translating:"Çevriliyor…", original:"Özgün metni göster", translated_by:"Makine çevirisi", translate_error:"Çeviri şu anda kullanılamıyor.", language_tr:"Türkçe", language_en:"İngilizce" },
+  en: { room:"Looking for a home", mate:"Looking for a flatmate", city:"City", district:"District", budget:"Monthly share limit", search:"Find listings", title:"A good home starts with a good flatmate.", intro:"Find a home or a flatmate that fits you. Get to know each other, then decide together.", signup:"Join", login:"Log in", logout:"Log out", create:"Create listing", saved:"Saved", inbox:"Messages", mine:"My listings", no:"No listings match yet.", loading:"Loading listings…", error:"Something went wrong.", type:"Listing type", name:"Your name", email:"Email", password:"Password (at least 10 characters)", bio:"Introduce yourself (at least 20 characters)", posttitle:"Listing title", desc:"Listing description", date:"Move-in / available date", amount:"Your monthly budget (₺)", share:"Monthly share per person (₺)", cityname:"Istanbul", districtname:"Kadikoy", submit:"Save", cancel:"Cancel", detail:"Listing details", profile:"Introduction", needlogin:"Log in to view the introduction.", message:"Send a message", match:"Find matches", noresult:"No suitable matches yet.", utilities:"Bills information", roomtype:"Room type (e.g. 2+1)", people:"People in the home", photos:"Home photos (up to 5)", smoke:"Do you smoke?", pets:"Do you have pets?", smoking_allowed:"Is smoking allowed at home?", pets_allowed:"Are pets allowed?", sleep:"Sleep schedule", clean:"Cleanliness preference", guests:"Guest frequency", early:"Early", night:"Night owl", flexible:"Flexible", tidy:"Tidy", average:"Average", relaxed:"Relaxed", rare:"Rarely", sometimes:"Sometimes", often:"Often", yes:"Yes", no2:"No", published:"Your listing is live.", matchscore:"match", send:"Send", message_placeholder:"Write a message…", none:"Nothing here yet.", peoplelabel:"PEOPLE TO MATCH WITH", close:"Close listing", reopen:"Publish again", all:"Monthly share", roomsearch:"People looking for a home", matesearch:"People looking for a flatmate", eyebrow:"Sharing a home made easier", headline:"A good home starts with a good flatmate.", subhead:"Find a home or flatmate that fits you. Get to know each other, then decide together.", tab_room:"Looking for a home", tab_roommate:"Looking for a flatmate", max_budget:"Monthly share limit", latest:"People you may like", create_post:"Create listing", footer:"A better way to find a flatmate.", detected:"Listing language", translate:"Translate to English", translating:"Translating…", original:"Show original", translated_by:"Machine translated", translate_error:"Translation is unavailable right now.", language_tr:"Turkish", language_en:"English" }
 };
 const t = key => words[state.lang][key] || key;
+function detectPostLanguage(text) {
+  const value = String(text || "").toLocaleLowerCase();
+  if (/[ışğüöç]/i.test(value) || /\b(ve|bir|için|ev|oda|arıyorum|kiralık|eşyalı|paylaşmak|uygun|merhaba|öğrenci|çalışan|bütçe|aylık|tercih|sigara|evcil|hayvan)\b/.test(value)) return "tr";
+  return "en";
+}
+async function translateText(text, source, target) {
+  let hash = 2166136261;
+  for (const character of text) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  const cacheKey = "homematch_translation_" + source + "_" + target + "_" + (hash >>> 0).toString(36);
+  try { const cached = localStorage.getItem(cacheKey); if (cached) return cached; } catch {}
+  const sentences = String(text).match(/[^.!?\n]+[.!?]?\n*/g) || [String(text)];
+  const chunks = [];
+  let chunk = "";
+  for (const sentence of sentences) {
+    if (new TextEncoder().encode(chunk + sentence).length > 430 && chunk) { chunks.push(chunk); chunk = ""; }
+    if (new TextEncoder().encode(sentence).length > 430) {
+      let piece = "";
+      for (const word of sentence.split(/(\s+)/)) {
+        if (new TextEncoder().encode(piece + word).length > 430 && piece) { chunks.push(piece); piece = ""; }
+        piece += word;
+      }
+      chunk += piece;
+    } else chunk += sentence;
+  }
+  if (chunk) chunks.push(chunk);
+  const translated = [];
+  for (const part of chunks) {
+    const data = await api("/translate", {
+      method: "POST",
+      body: JSON.stringify({ text: part, source_language: source, target_language: target }),
+    });
+    translated.push(data.translated_text);
+  }
+  const result = translated.join("");
+  try { localStorage.setItem(cacheKey, result); } catch {}
+  return result;
+}
+function applyLocale() {
+  document.documentElement.lang = state.lang;
+  document.querySelector("#language-toggle").textContent = state.lang === "tr" ? "EN" : "TR";
+  document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
+  document.querySelector("#city-filter").placeholder = t("cityname");
+  document.querySelector("#district-filter").placeholder = t("districtname");
+  document.querySelector("#budget-filter").placeholder = "₺";
+  document.querySelectorAll(".choice-tab").forEach(tab => {
+    const active = tab.dataset.type === state.type;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  document.querySelector("#results-title").textContent = state.type === "looking_for_room" ? t("roomsearch") : t("matesearch");
+}
 const escapeHtml = value => String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[ch]));
 const dialog = document.querySelector("#dialog");
 const body = document.querySelector("#dialog-content");
@@ -85,19 +137,63 @@ function field(name, label, type, required, value) {
   return '<div class="field full"><label>' + escapeHtml(label) + "</label>" + content + "</div>";
 }
 function showDetail(id) {
+  state.activePostId = id;
   api("/posts/" + id).then(async post => {
+    const sourceLanguage = detectPostLanguage(post.title + " " + post.description);
     let profile = '<p class="muted">' + t("needlogin") + "</p>";
     if (state.user) {
       const result = await api("/posts/" + id + "/profile");
       profile = "<h3>" + escapeHtml(result.profile.display_name) + "</h3><p>" + escapeHtml(result.profile.intro) + "</p>";
       const lifestyle = result.post.seeker_lifestyle || result.post.household_rules;
-      if (lifestyle) profile += '<p class="muted">' + escapeHtml(JSON.stringify(lifestyle)) + "</p>";
+      if (lifestyle) {
+        const rows = [];
+        const boolFields = result.post.seeker_lifestyle
+          ? [["smokes", "smoke"], ["has_pets", "pets"]]
+          : [["smoking_allowed", "smoking_allowed"], ["pets_allowed", "pets_allowed"]];
+        boolFields.forEach(([key, label]) => rows.push([t(label), lifestyle[key] ? t("yes") : t("no2")]));
+        [["sleep_schedule", { early:"early", night_owl:"night", flexible:"flexible" }],
+          ["cleanliness", { tidy:"tidy", average:"average", relaxed:"relaxed" }],
+          ["guest_frequency", { rare:"rare", sometimes:"sometimes", often:"often" }]].forEach(([key, values]) => {
+          if (lifestyle[key]) rows.push([t(key === "sleep_schedule" ? "sleep" : key === "cleanliness" ? "clean" : "guests"), t(values[lifestyle[key]] || lifestyle[key])]);
+        });
+        profile += '<dl class="lifestyle-list">' + rows.map(([label, value]) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(value) + '</dd></div>').join("") + "</dl>";
+      }
     }
     let content = '<p class="muted">' + escapeHtml(post.district) + ", " + escapeHtml(post.city) + " · " + escapeHtml(post.available_from) + "</p>";
     if (post.image_urls && post.image_urls[0]) content += '<img class="detail-hero" src="' + escapeHtml(post.image_urls[0]) + '" alt="">';
-    content += '<h2 class="detail-title">' + escapeHtml(post.title) + '</h2><p class="detail-copy">' + escapeHtml(post.description) + "</p><h3>" + t("profile") + "</h3>" + profile;
+    content += '<div class="listing-language"><span>' + t("detected") + ': ' + t(sourceLanguage === "tr" ? "language_tr" : "language_en") + '</span><button type="button" id="translate-listing" class="text-button">' + t("translate") + '</button><span id="translation-credit" class="muted" hidden>' + t("translated_by") + ' · MyMemory</span></div>';
+    content += '<h2 id="detail-title-text" class="detail-title">' + escapeHtml(post.title) + '</h2><p id="detail-description-text" class="detail-copy">' + escapeHtml(post.description) + "</p><h3>" + t("profile") + "</h3>" + profile;
     content += '<div class="form-actions"><button id="detail-fav" class="button button-light">' + t("saved") + '</button><button id="detail-message" class="button button-dark">' + t("message") + "</button></div>";
     open(t("detail"), content);
+    const translationButton = document.querySelector("#translate-listing");
+    let translated = false;
+    if (sourceLanguage === state.lang) translationButton.hidden = true;
+    translationButton.onclick = async () => {
+      if (translated) {
+        translated = false;
+        document.querySelector("#detail-title-text").textContent = post.title;
+        document.querySelector("#detail-description-text").textContent = post.description;
+        document.querySelector("#translation-credit").hidden = true;
+        translationButton.textContent = t("translate");
+        return;
+      }
+      translationButton.disabled = true;
+      translationButton.textContent = t("translating");
+      try {
+        const [title, description] = await Promise.all([
+          translateText(post.title, sourceLanguage, state.lang),
+          translateText(post.description, sourceLanguage, state.lang),
+        ]);
+        document.querySelector("#detail-title-text").textContent = title;
+        document.querySelector("#detail-description-text").textContent = description;
+        document.querySelector("#translation-credit").hidden = false;
+        translationButton.textContent = t("original");
+        translated = true;
+      } catch {
+        translationButton.textContent = t("translate_error");
+      } finally { translationButton.disabled = false; }
+    };
+    if (sourceLanguage !== state.lang) translationButton.click();
     document.querySelector("#detail-fav").onclick = () => {
       if (!state.user) return authForm(false);
       api("/me/favorites/" + id, { method:"PUT" }).catch(error => alert(error.message));
@@ -206,7 +302,7 @@ async function showInbox() {
 }
 document.querySelectorAll(".choice-tab").forEach(button => button.onclick = () => {
   state.type = button.dataset.type;
-  document.querySelectorAll(".choice-tab").forEach(tab => { tab.classList.toggle("active",tab === button); tab.setAttribute("aria-selected",tab === button ? "true" : "false"); });
+  applyLocale();
   loadPosts();
 });
 document.querySelector("#search-button").onclick = loadPosts;
@@ -219,16 +315,14 @@ document.querySelector("#favorites-button").onclick = showFavorites;
 document.querySelector("#inbox-button").onclick = showInbox;
 document.querySelector("#language-toggle").onclick = () => {
   state.lang = state.lang === "tr" ? "en" : "tr"; localStorage.setItem("homematch_lang",state.lang);
-  document.documentElement.lang = state.lang; document.querySelector("#language-toggle").textContent = state.lang === "tr" ? "EN" : "TR";
-  document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent = t(node.dataset.i18n); });
-  syncHeader(); loadPosts();
+  applyLocale(); syncHeader(); loadPosts();
+  if (state.activePostId && dialog.open) showDetail(state.activePostId);
 };
 document.querySelector("#dialog-close").onclick = () => dialog.close();
 document.querySelector("#post-grid").onclick = event => { const card=event.target.closest("[data-post]"); if(card) showDetail(card.dataset.post); };
 body.onclick = event => { if (event.target.closest("button")) return; const card=event.target.closest("[data-post]"); if(card) showDetail(card.dataset.post); };
 async function init() {
-  document.documentElement.lang=state.lang; document.querySelector("#language-toggle").textContent=state.lang === "tr" ? "EN" : "TR";
-  document.querySelectorAll("[data-i18n]").forEach(node => { node.textContent=t(node.dataset.i18n); });
+  applyLocale();
   if(state.token) { try { state.user=await api("/auth/me"); } catch { state.token=null; localStorage.removeItem("homematch_token"); } }
   syncHeader(); await loadPosts();
 }

@@ -3,3 +3,11 @@ body { font-family: system-ui, sans-serif; }
 .field[hidden] { display: none; }
 .conversation-row { display:flex; width:100%; flex-direction:column; gap:5px; text-align:left; background:#fff; border:1px solid #e4e6df; border-radius:12px; padding:14px; margin:7px 0; cursor:pointer; }
 .conversation-row span,.conversation-row small { color:#727a73; }
+.listing-language { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; border-radius:12px; background:#f3f4ef; color:#626a62; font-size:12px; }
+.listing-language .text-button { margin-left:auto; padding:6px 8px; color:#31552a; text-decoration:underline; text-underline-offset:3px; }
+.listing-language button:disabled { opacity:.65; cursor:wait; }
+.lifestyle-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+.lifestyle-list div { padding:10px 12px; border-radius:10px; background:#f3f4ef; }
+.lifestyle-list dt { color:#727a73; font-size:11px; }
+.lifestyle-list dd { margin:3px 0 0; font-size:13px; font-weight:600; }
+@media(max-width:560px) { .lifestyle-list { grid-template-columns:1fr; } }

@@ -61,6 +61,7 @@ All request and response payloads are JSON except photo uploads (`multipart/form
 | --- | --- | --- | --- |
 | `GET` | `/health` | Public | Process health |
 | `GET` | `/health/ready` | Public | API and PostgreSQL readiness |
+| `POST` | `/translate` | Public | Translate up to 450 characters between Turkish and English via MyMemory |
 | `POST` | `/auth/register` | Public | Create an account and return token |
 | `POST` | `/auth/login` | Public | Sign in and return token |
 | `GET`, `PATCH` | `/auth/me` | Member | Read/update introduction |

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from config import settings
-from routers import auth, health, messaging, me, posts
+from routers import auth, health, messaging, me, posts, translation
 
 app = FastAPI(
     title="HomeMatch API",
@@ -18,3 +18,4 @@ app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(me.router)
 app.include_router(messaging.router)
+app.include_router(translation.router)
