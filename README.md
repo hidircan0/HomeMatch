@@ -1,106 +1,98 @@
 # HomeMatch
 
-HomeMatch is an early-stage backend for a home matching service. The current foundation is a JSON REST API built with FastAPI, SQLAlchemy, and PostgreSQL, with both services configured to run through Docker Compose.
+HomeMatch helps people find a compatible flatmate. There is no landlord role: any member can post that they are looking for a room, looking for a flatmate, or both.
 
-> The project currently includes a health endpoint and database connection/session setup. Property, user, and matching features have not been implemented yet.
-
-## Architecture schematic
+## Architecture
 
 ```mermaid
 flowchart LR
-    Client[API client] -->|HTTP / JSON| API[FastAPI service\nport 8000]
-    API --> Router[routers/]
-    Router --> Schemas[schemas/\nrequest and response models]
-    Router --> DB[database.py\nSQLAlchemy engine and sessions]
-    DB -->|PostgreSQL protocol| PG[(PostgreSQL 16\nport 5432)]
-    Models[models/\nSQLAlchemy models] -. used by future routes .-> DB
+    Guest[Guest or member] --> Web[Responsive web client\nTurkish / English]
+    Web -->|JSON over /api| API[FastAPI]
+    API --> Auth[Accounts and access control]
+    API --> Posts[Roommate posts and matching]
+    API --> Chat[Favorites and messages]
+    API --> DB[(PostgreSQL 16)]
+    API --> ObjectStore[(S3 compatible image storage)]
+    Web -->|Public listing images| ObjectStore
 ```
-
-## Request schematic
 
 ```mermaid
-sequenceDiagram
-    participant C as API client
-    participant A as FastAPI (main.py)
-    participant R as Health router
-    C->>A: GET /health
-    A->>R: Route request
-    R-->>A: {"status": "ok"}
-    A-->>C: 200 application/json
+flowchart LR
+    Searcher["Ev arıyorum\nseeks a room"] -->|complementary match| Offer["Ev arkadaşı arıyorum\nopens a room in a shared home"]
+    Offer -->|person's monthly share| Searcher
+    Searcher -->|member-only conversation| Offer
 ```
 
-## Requirements
+The web client is plain HTML, CSS, and JavaScript. Nginx serves it and proxies `/api/*` to FastAPI. FastAPI publishes the JSON/OpenAPI contract at `/openapi.json` and `/docs`.
 
-- Docker Engine and the Docker Compose plugin
-- Git (optional, for cloning the project)
+## Run with Docker Compose
 
-No local Python installation is needed when running the API in Docker.
+Requirements: Docker Engine and the Docker Compose plugin.
 
-## Run locally with Docker
+```sh
+cp .env.example .env
+docker compose up --build
+```
 
-1. Create your local environment file from the example:
+- Web app: <http://localhost:8080>
+- API: <http://localhost:8000>
+- API docs: <http://localhost:8000/docs>
+- OpenAPI JSON: <http://localhost:8000/openapi.json>
+- PostgreSQL: `localhost:5432`
+- MinIO console: <http://localhost:9001>
 
-   ```sh
-   cp .env.example .env
-   ```
+The API waits for PostgreSQL and MinIO bucket setup, then applies Alembic migrations before starting. PostgreSQL and MinIO data persist in named Docker volumes. Stop containers with `docker compose down`; remove local database and images with `docker compose down --volumes`.
 
-2. Start the API and PostgreSQL:
+Use only development credentials locally. Set unique `POSTGRES_PASSWORD`, `JWT_SECRET`, and S3 credentials before deployment. `.env` is ignored by Git; keep real secrets out of `.env.example` and source control.
 
-   ```sh
-   docker compose up --build
-   ```
+## Product flow
 
-Compose waits for PostgreSQL's health check before starting the API. The API is available at `http://localhost:8000`.
+- **Ev arıyorum:** A member shares an introduction, preferred location, maximum monthly share, move-in date, and personal lifestyle details.
+- **Ev arkadaşı arıyorum:** A member with a room available shares home details, the monthly amount requested from the incoming person, availability, and household rules.
+- Members can create either or both post types. A monthly amount is displayed as entered; the app does not split rent or transfer money.
+- Public visitors can browse listing cards and details. Profile introductions and lifestyle details, favorites, matching, and messaging require login.
+- Matching compares only complementary post types. Its score weights location (30%), rent (30%), lifestyle (25%), and move-in date (15%). A breakdown is included with each result.
+- Photos are limited to five JPEG, PNG, or WebP images per post, up to 10 MB per image. Local Compose uses MinIO; object keys are stored in PostgreSQL.
 
-To stop the services, press `Ctrl+C`, then run `docker compose down`. PostgreSQL data is stored in the named `postgres_data` volume and remains when containers are stopped or removed. To remove that data too, run `docker compose down --volumes`.
+## API overview
 
-## Configuration
+All request and response payloads are JSON except photo uploads (`multipart/form-data`). Authentication uses a bearer token returned by register/login.
 
-Compose reads settings from `.env`. The tracked `.env.example` documents the expected values:
+| Method | Path | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/health` | Public | Process health |
+| `GET` | `/health/ready` | Public | API and PostgreSQL readiness |
+| `POST` | `/auth/register` | Public | Create an account and return token |
+| `POST` | `/auth/login` | Public | Sign in and return token |
+| `GET`, `PATCH` | `/auth/me` | Member | Read/update introduction |
+| `GET` | `/posts` | Public | Browse/filter active posts |
+| `POST` | `/posts` | Member | Create either post type |
+| `GET` | `/posts/{id}` | Public | Read listing details without personal profile |
+| `GET` | `/posts/{id}/profile` | Member | Read post and author's introduction/lifestyle details |
+| `PATCH`, `DELETE` | `/posts/{id}` | Post author | Update or delete a post |
+| `POST`, `DELETE` | `/posts/{id}/images` | Post author | Add/remove listing photos |
+| `GET` | `/posts/{id}/matches` | Post author | Find and score complementary posts |
+| `GET` | `/me/posts`, `/me/favorites` | Member | Read own posts and favorites |
+| `PUT`, `DELETE` | `/me/favorites/{post_id}` | Member | Add/remove a favorite |
+| `POST` | `/posts/{id}/conversations` | Member | Start/reuse a conversation with the post author |
+| `GET` | `/me/conversations` | Member | List conversations |
+| `GET`, `POST` | `/conversations/{id}/messages` | Participants | Read/send messages |
 
-| Variable | Purpose | Example |
-| --- | --- | --- |
-| `POSTGRES_DB` | Database created by the PostgreSQL container | `homematch` |
-| `POSTGRES_USER` | PostgreSQL application user | `homematch` |
-| `POSTGRES_PASSWORD` | Password for that user | Change the example value locally |
-| `DATABASE_URL` | SQLAlchemy connection URL used by the API container | `postgresql+psycopg://homematch:...@db:5432/homematch` |
+Post type values are `looking_for_room` and `looking_for_roommate`. Registration requires email, password (10+ characters), display name, and a 20–1200 character introduction. Post creation validates the fields required for its selected type. The generated OpenAPI document is the detailed contract for field types and error responses.
 
-The hostname `db` is the Compose service name and is used by the API container. From a database client on your host, connect to `localhost:5432`. The example credentials are for local development only; use private, strong credentials in any shared or deployed environment.
-
-## API
-
-| Method | Path | Response |
-| --- | --- | --- |
-| `GET` | `/health` | `200` — `{"status":"ok"}` |
-
-FastAPI also serves the generated OpenAPI contract and interactive API documentation:
-
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-- OpenAPI JSON: `http://localhost:8000/openapi.json`
-
-All API responses use JSON. The health check currently confirms the API process is responding; it does not check database connectivity.
-
-## Project structure
+## Project layout
 
 ```text
 .
-├── database.py          # SQLAlchemy engine, base class, and session dependency
-├── Dockerfile           # Container image for the FastAPI service
-├── docker-compose.yml   # API and PostgreSQL services
-├── main.py              # FastAPI application and router registration
-├── models/              # SQLAlchemy model package (ready for domain models)
-├── requirements.txt     # Python dependencies
-├── routers/             # HTTP endpoints; currently includes /health
-└── schemas/             # Pydantic request/response schemas
+├── frontend/             # Static responsive client and Nginx API proxy
+├── models/               # SQLAlchemy entities
+├── migrations/           # Alembic schema migrations
+├── routers/              # Auth, posts, profile, health, and messaging routes
+├── schemas/              # Pydantic JSON request/response contracts
+├── services/             # Matching and object storage helpers
+├── database.py           # SQLAlchemy engine and session dependency
+├── docker-compose.yml    # Web, API, PostgreSQL, and MinIO services
+└── main.py               # FastAPI app and route registration
 ```
 
-## Backend conventions
-
-- Add HTTP endpoints under `routers/` and include their routers in `main.py`.
-- Define API input and output contracts in `schemas/` so they appear in OpenAPI.
-- Define relational entities in `models/` using the shared `Base` from `database.py`.
-- Use the `get_db` dependency from `database.py` to obtain and close request-scoped database sessions.
-- Return structured JSON from API endpoints.
-
-Database tables and migrations are not configured yet. Add a migration workflow before relying on persistent application schemas.
+The first migration runs automatically in Compose. When changing database models, create and review a new Alembic migration before shipping the change. This is an MVP foundation; it does not include moderation, payment collection, rent transfers, or real-time messaging.

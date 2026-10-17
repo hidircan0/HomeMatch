@@ -1,1 +1,1 @@
-"""Pydantic request and response schemas for HomeMatch."""
+"""Pydantic request and response schemas."""

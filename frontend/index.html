@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f6f2">
+  <title>HomeMatch — Ev arkadaşı bul</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/overrides.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="HomeMatch ana sayfa"><span class="brand-mark">H</span> HomeMatch</a>
+    <nav class="top-actions" aria-label="Hesap işlemleri">
+      <button class="text-button" id="language-toggle" type="button">EN</button>
+      <button class="text-button" id="favorites-button" type="button" hidden>Kaydedilenler</button>
+      <button class="text-button" id="inbox-button" type="button" hidden>Mesajlar</button>
+      <button class="text-button" id="my-posts-button" type="button" hidden>İlanlarım</button>
+      <button class="button button-light" id="login-button" type="button">Giriş yap</button>
+      <button class="button button-dark" id="register-button" type="button">Üye ol</button>
+      <button class="text-button" id="logout-button" type="button" hidden>Çıkış</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow" data-i18n="eyebrow">Aynı evi paylaş, hayatı kolaylaştır</p>
+      <h1 data-i18n="headline">İyi bir ev, iyi bir ev arkadaşıyla başlar.</h1>
+      <p class="hero-copy" data-i18n="subhead">Kendine uygun evi ya da ev arkadaşını bul. Önce tanış, sonra birlikte karar ver.</p>
+      <div class="choice-tabs" role="tablist" aria-label="İlan türü">
+        <button class="choice-tab active" data-type="looking_for_room" type="button" role="tab" aria-selected="true" data-i18n="tab_room">Ev arıyorum</button>
+        <button class="choice-tab" data-type="looking_for_roommate" type="button" role="tab" aria-selected="false" data-i18n="tab_roommate">Ev arkadaşı arıyorum</button>
+      </div>
+    </section>
+
+    <section class="search-panel" aria-label="İlanları ara">
+      <label><span data-i18n="city">İl</span><input id="city-filter" maxlength="80" placeholder="İstanbul"></label>
+      <label><span data-i18n="district">İlçe</span><input id="district-filter" maxlength="80" placeholder="Kadıköy"></label>
+      <label><span data-i18n="max_budget">Aylık kişi payı üst sınırı</span><input id="budget-filter" type="number" min="1" step="500" placeholder="₺"></label>
+      <button id="search-button" class="button button-dark" type="button" data-i18n="search">İlanları bul</button>
+    </section>
+
+    <section class="results-section">
+      <div class="section-heading">
+        <div><p class="eyebrow" data-i18n="latest">Sana uygun kişiler</p><h2 id="results-title">Ev arayanlar</h2></div>
+        <button id="create-post-button" class="button button-accent" type="button" hidden data-i18n="create_post">İlan oluştur</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <div id="post-grid" class="post-grid"></div>
+    </section>
+  </main>
+
+  <dialog id="dialog" class="dialog">
+    <div class="dialog-head"><h2 id="dialog-title"></h2><button id="dialog-close" class="icon-button" type="button" aria-label="Close">×</button></div>
+    <div id="dialog-content"></div>
+  </dialog>
+  <footer><span>HomeMatch</span><span data-i18n="footer">Ev arkadaşı bulmanın daha iyi bir yolu.</span></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
