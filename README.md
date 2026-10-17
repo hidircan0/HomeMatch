@@ -12,7 +12,7 @@ flowchart LR
     API --> Posts[Roommate posts and matching]
     API --> Chat[Favorites and messages]
     API --> DB[(PostgreSQL 16)]
-    API --> ObjectStore[(S3 compatible image storage)]
+    API --> Uploads[(Local persistent image storage)]
     Web -->|Public listing images| ObjectStore
 ```
 
@@ -39,11 +39,10 @@ docker compose up --build
 - API docs: <http://localhost:8000/docs>
 - OpenAPI JSON: <http://localhost:8000/openapi.json>
 - PostgreSQL: `localhost:5432`
-- MinIO console: <http://localhost:9001>
 
-The API waits for PostgreSQL and MinIO bucket setup, then applies Alembic migrations before starting. PostgreSQL and MinIO data persist in named Docker volumes. Stop containers with `docker compose down`; remove local database and images with `docker compose down --volumes`.
+The API waits for PostgreSQL, then applies Alembic migrations before starting. PostgreSQL data and uploaded images persist in named Docker volumes. Stop containers with `docker compose down`; remove local database and images with `docker compose down --volumes`.
 
-Use only development credentials locally. Set unique `POSTGRES_PASSWORD`, `JWT_SECRET`, and S3 credentials before deployment. `.env` is ignored by Git; keep real secrets out of `.env.example` and source control.
+Use only development credentials locally. Set unique `POSTGRES_PASSWORD` and `JWT_SECRET` before deployment. `.env` is ignored by Git; keep real secrets out of `.env.example` and source control.
 
 ## Product flow
 
@@ -52,7 +51,7 @@ Use only development credentials locally. Set unique `POSTGRES_PASSWORD`, `JWT_S
 - Members can create either or both post types. A monthly amount is displayed as entered; the app does not split rent or transfer money.
 - Public visitors can browse listing cards and details. Profile introductions and lifestyle details, favorites, matching, and messaging require login.
 - Matching compares only complementary post types. Its score weights location (30%), rent (30%), lifestyle (25%), and move-in date (15%). A breakdown is included with each result.
-- Photos are limited to five JPEG, PNG, or WebP images per post, up to 10 MB per image. Local Compose uses MinIO; object keys are stored in PostgreSQL.
+- Photos are limited to five JPEG, PNG, or WebP images per post, up to 10 MB per image. Local Compose stores image files in a persistent Docker volume; image keys are stored in PostgreSQL and files are served at `/uploads/`.
 
 ## API overview
 
@@ -89,9 +88,9 @@ Post type values are `looking_for_room` and `looking_for_roommate`. Registration
 ├── migrations/           # Alembic schema migrations
 ├── routers/              # Auth, posts, profile, health, and messaging routes
 ├── schemas/              # Pydantic JSON request/response contracts
-├── services/             # Matching and object storage helpers
+├── services/             # Matching and local upload storage helpers
 ├── database.py           # SQLAlchemy engine and session dependency
-├── docker-compose.yml    # Web, API, PostgreSQL, and MinIO services
+├── docker-compose.yml    # Web, API, and PostgreSQL services
 └── main.py               # FastAPI app and route registration
 ```
 

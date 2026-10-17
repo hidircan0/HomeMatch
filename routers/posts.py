@@ -1,5 +1,4 @@
 import uuid
-from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import select
@@ -10,7 +9,7 @@ from models import PostImage, PostType, RoommatePost, User
 from schemas.posts import MatchOut, PostCreate, PostDetailOut, PostOut, PostProfileOut, PostUpdate, ProfileOut, PublicPostOut
 from security import get_current_user
 from services.matching import complementary, score_pair
-from services.storage import public_image_url, s3_client
+from services.storage import delete_image, public_image_url, save_image
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 ALLOWED_IMAGES = {
@@ -169,11 +168,8 @@ def delete_post(post_id: uuid.UUID, user: User = Depends(get_current_user), db: 
     post = db.scalar(select(RoommatePost).options(joinedload(RoommatePost.images)).where(RoommatePost.id == post_id))
     if post is None or post.author_id != user.id:
         raise HTTPException(status_code=404, detail="İlan bulunamadı.")
-    client = s3_client()
     for image in post.images:
-        from config import settings
-
-        client.delete_object(Bucket=settings.s3_bucket, Key=image.object_key)
+        delete_image(image.object_key)
     db.delete(post)
     db.commit()
 
@@ -199,17 +195,14 @@ async def upload_post_image(
     if not validate(data):
         raise HTTPException(status_code=415, detail="Dosya içeriği seçilen görsel türüyle eşleşmiyor.")
     object_key = f"{post.id}/{uuid.uuid4()}.{extension}"
-    from config import settings
-
-    client = s3_client()
-    client.upload_fileobj(BytesIO(data), settings.s3_bucket, object_key, ExtraArgs={"ContentType": file.content_type})
+    save_image(object_key, data)
     image = PostImage(post_id=post.id, object_key=object_key, content_type=file.content_type)
     db.add(image)
     try:
         db.commit()
     except Exception:
         db.rollback()
-        client.delete_object(Bucket=settings.s3_bucket, Key=object_key)
+        delete_image(object_key)
         raise
     db.refresh(image)
     return {"id": str(image.id), "image_url": public_image_url(object_key)}
@@ -226,9 +219,7 @@ def delete_post_image(
     image = db.get(PostImage, image_id)
     if post is None or post.author_id != user.id or image is None or image.post_id != post.id:
         raise HTTPException(status_code=404, detail="Fotoğraf bulunamadı.")
-    from config import settings
-
-    s3_client().delete_object(Bucket=settings.s3_bucket, Key=image.object_key)
+    delete_image(image.object_key)
     db.delete(image)
     db.commit()
 
