@@ -42,6 +42,16 @@ docker compose up --build
 
 The API waits for PostgreSQL, then applies Alembic migrations before starting. PostgreSQL data and uploaded images persist in named Docker volumes. Stop containers with `docker compose down`; remove local database and images with `docker compose down --volumes`.
 
+### Publish through Cloudflare Tunnel
+
+Create a remotely managed tunnel in the Cloudflare dashboard and copy its **tunnel token** into `CLOUDFLARE_TUNNEL_TOKEN` in `.env`. A tunnel ID alone cannot authenticate a `cloudflared` connector; Cloudflare requires the tunnel token (or a credentials JSON file for locally managed tunnels). Add a Published application route for `homematch.sadecekedi.com.tr` with service `http://web:80`, then start the tunnel profile:
+
+```sh
+docker compose --profile cloudflare up -d --build
+```
+
+Cloudflare terminates HTTPS and forwards traffic through the tunnel to Nginx, which proxies API calls and uploaded images to FastAPI. Image links use the same-origin `/uploads/` path, so they work locally and through the custom domain. The `cloudflared` connector makes an outbound connection; no public host port is needed for it. Keep the tunnel token private and out of Git.
+
 Use only development credentials locally. Set unique `POSTGRES_PASSWORD` and `JWT_SECRET` before deployment. `.env` is ignored by Git; keep real secrets out of `.env.example` and source control.
 
 ## Product flow
@@ -65,6 +75,7 @@ All request and response payloads are JSON except photo uploads (`multipart/form
 | `POST` | `/auth/register` | Public | Create an account and return token |
 | `POST` | `/auth/login` | Public | Sign in and return token |
 | `GET`, `PATCH` | `/auth/me` | Member | Read/update introduction |
+| `PATCH` | `/auth/me/password` | Member | Change password after verifying the current password; new password is stored as a hash |
 | `GET` | `/posts` | Public | Browse/filter active posts |
 | `POST` | `/posts` | Member | Create either post type |
 | `GET` | `/posts/{id}` | Public | Read listing details without personal profile |

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from schemas.auth import LoginRequest, ProfileUpdate, RegisterRequest, TokenOut, UserOut
+from schemas.auth import LoginRequest, PasswordChangeRequest, ProfileUpdate, RegisterRequest, TokenOut, UserOut
 from security import create_access_token, get_current_user, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -47,3 +47,17 @@ def update_me(payload: ProfileUpdate, user: User = Depends(get_current_user), db
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.patch("/me/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: PasswordChangeRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(payload.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Mevcut parola hatalı.")
+    if verify_password(payload.new_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Yeni parola mevcut paroladan farklı olmalı.")
+    user.password_hash = hash_password(payload.new_password)
+    db.commit()

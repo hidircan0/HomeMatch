@@ -21,6 +21,11 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=10, max_length=128)
+
+
 class ProfileUpdate(BaseModel):
     display_name: str = Field(min_length=2, max_length=80)
     intro: str = Field(min_length=20, max_length=1200)

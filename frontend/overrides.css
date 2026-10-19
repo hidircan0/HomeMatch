@@ -3,6 +3,7 @@ body { font-family: system-ui, sans-serif; }
 .field[hidden] { display: none; }
 .conversation-row { display:flex; width:100%; flex-direction:column; gap:5px; text-align:left; background:#fff; border:1px solid #e4e6df; border-radius:12px; padding:14px; margin:7px 0; cursor:pointer; }
 .conversation-row span,.conversation-row small { color:#727a73; }
+.top-actions { flex-wrap:wrap; justify-content:flex-end; }
 .listing-language { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; border-radius:12px; background:#f3f4ef; color:#626a62; font-size:12px; }
 .listing-language .text-button { margin-left:auto; padding:6px 8px; color:#31552a; text-decoration:underline; text-underline-offset:3px; }
 .listing-language button:disabled { opacity:.65; cursor:wait; }
@@ -11,3 +12,5 @@ body { font-family: system-ui, sans-serif; }
 .lifestyle-list dt { color:#727a73; font-size:11px; }
 .lifestyle-list dd { margin:3px 0 0; font-size:13px; font-weight:600; }
 @media(max-width:560px) { .lifestyle-list { grid-template-columns:1fr; } }
+@media(max-width:850px) { .topbar { height:auto; min-height:76px; padding-top:10px; padding-bottom:10px; flex-wrap:wrap; gap:8px; } }
+@media(max-width:560px) { .topbar { align-items:flex-start; flex-direction:column; } .top-actions { justify-content:flex-start; gap:3px; } }
