@@ -2,7 +2,7 @@ services:
   api:
     build: .
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8009:8009"
     environment:
       DATABASE_URL: "${DATABASE_URL:-postgresql+psycopg://homematch:homematch_dev@db:5432/homematch}"
       JWT_SECRET: "${JWT_SECRET:-local-only-change-this-secret}"
@@ -19,7 +19,7 @@ services:
   web:
     build: ./frontend
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:8082:80"
     depends_on:
       - api
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       POSTGRES_USER: "${POSTGRES_USER:-homematch}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-homematch_dev}"
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5433"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

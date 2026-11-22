@@ -1,0 +1,20 @@
+digraph HomeMatch {
+ graph [rankdir=LR, splines=polyline, bgcolor="white", pad=0.35, nodesep=0.45, ranksep=1.1, fontname="DejaVu Sans", labelloc=t, label="HomeMatch — Simplified ER Dependency Diagram\nRectangles = entities  |  Ellipses = key attributes  |  Dashed arrows = FK → referenced PK", fontsize=20];
+ node [fontname="DejaVu Sans", fontsize=11, color="#55758d", penwidth=1.4];
+ edge [fontname="DejaVu Sans", fontsize=9, color="#64748b", penwidth=1.2, arrowsize=0.7];
+ subgraph cluster_users { label=""; color="white"; users [shape=box, style="rounded,filled", fillcolor="#dcebf5", label="USERS", width=2.2, height=.65]; u_pk [shape=ellipse, label="PK user_id"]; u_uq [shape=ellipse, label="UQ email"]; users -> u_pk [dir=none]; users -> u_uq [dir=none]; }
+ subgraph cluster_posts { label=""; color="white"; posts [shape=box, style="rounded,filled", fillcolor="#e2f0d9", label="ROOMMATE_POSTS", width=2.5, height=.65]; p_pk [shape=ellipse, label="PK post_id"]; p_author [shape=ellipse, label="FK author_user_id"]; posts -> p_pk [dir=none]; posts -> p_author [dir=none]; }
+ subgraph cluster_images { label=""; color="white"; images [shape=box, style="rounded,filled", fillcolor="#fff2cc", label="POST_IMAGES", width=2.2, height=.65]; i_pk [shape=ellipse, label="PK image_id"]; i_post [shape=ellipse, label="FK post_id"]; images -> i_pk [dir=none]; images -> i_post [dir=none]; }
+ subgraph cluster_seek { label=""; color="white"; seeker [shape=box, style="rounded,filled", fillcolor="#e8ddf0", label="SEEKER_LIFESTYLES", width=2.5, height=.65]; s_key [shape=ellipse, label="PK/FK post_id"]; seeker -> s_key [dir=none]; }
+ subgraph cluster_house { label=""; color="white"; household [shape=box, style="rounded,filled", fillcolor="#e8ddf0", label="HOUSEHOLD_RULES", width=2.5, height=.65]; h_key [shape=ellipse, label="PK/FK post_id"]; household -> h_key [dir=none]; }
+ subgraph cluster_favs { label=""; color="white"; favorites [shape=box, style="rounded,filled", fillcolor="#f8cecc", label="FAVORITES", width=2.2, height=.65]; f_pk [shape=ellipse, label="PK favorite_id"]; f_user [shape=ellipse, label="FK user_id"]; f_post [shape=ellipse, label="FK post_id"]; f_uq [shape=ellipse, label="UQ (user_id, post_id)"]; favorites -> f_pk [dir=none]; favorites -> f_user [dir=none]; favorites -> f_post [dir=none]; favorites -> f_uq [dir=none]; }
+ subgraph cluster_convos { label=""; color="white"; convos [shape=box, style="rounded,filled", fillcolor="#e8ddf0", label="CONVERSATIONS", width=2.4, height=.65]; c_pk [shape=ellipse, label="PK conversation_id"]; c_post [shape=ellipse, label="FK post_id"]; c_user [shape=ellipse, label="FK starter_user_id"]; c_uq [shape=ellipse, label="UQ (post_id, starter_user_id)"]; convos -> c_pk [dir=none]; convos -> c_post [dir=none]; convos -> c_user [dir=none]; convos -> c_uq [dir=none]; }
+ subgraph cluster_msgs { label=""; color="white"; messages [shape=box, style="rounded,filled", fillcolor="#e5e7eb", label="MESSAGES", width=2.2, height=.65]; m_pk [shape=ellipse, label="PK message_id"]; m_conv [shape=ellipse, label="FK conversation_id"]; m_user [shape=ellipse, label="FK sender_user_id"]; messages -> m_pk [dir=none]; messages -> m_conv [dir=none]; messages -> m_user [dir=none]; }
+ p_author -> u_pk [style=dashed, color="#b45309", constraint=false];
+ i_post -> p_pk [style=dashed, color="#b45309", constraint=false];
+ s_key -> p_pk [style=dashed, color="#b45309", constraint=false];
+ h_key -> p_pk [style=dashed, color="#b45309", constraint=false];
+ f_user -> u_pk [style=dashed, color="#b45309", constraint=false]; f_post -> p_pk [style=dashed, color="#b45309", constraint=false];
+ c_post -> p_pk [style=dashed, color="#b45309", constraint=false]; c_user -> u_pk [style=dashed, color="#b45309", constraint=false];
+ m_conv -> c_pk [style=dashed, color="#b45309", constraint=false]; m_user -> u_pk [style=dashed, color="#b45309", constraint=false];
+}

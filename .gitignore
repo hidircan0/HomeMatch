@@ -3,3 +3,4 @@ rules.md
 __pycache__/
 *.py[cod]
 .venv/
+.vscode/

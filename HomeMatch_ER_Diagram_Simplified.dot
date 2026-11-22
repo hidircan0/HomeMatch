@@ -1,0 +1,70 @@
+digraph HomeMatchSimple {
+  graph [rankdir=LR, bgcolor="white", pad=0.35, nodesep=0.75, ranksep=1.15, splines=ortho, fontname="Noto Sans", fontsize=22, labelloc=t, label="HomeMatch — Simplified ER / Key Dependency View\nPK determines the row; FK arrows show parent dependencies"];
+  node [shape=plain, fontname="Noto Sans", fontsize=14];
+  edge [fontname="Noto Sans", fontsize=12, color="#475569", penwidth=1.7, dir=both, arrowtail=tee, arrowhead=crowodot];
+
+  users [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#6c8ebf">
+      <TR><TD BGCOLOR="#1f4e78" COLSPAN="2"><FONT COLOR="white"><B>USERS</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#d9eaf7"><B>PK</B></TD><TD>user_id</TD></TR>
+      <TR><TD BGCOLOR="#d9eaf7"><B>UQ</B></TD><TD>email</TD></TR>
+    </TABLE>>];
+  posts [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#82b366">
+      <TR><TD BGCOLOR="#38734a" COLSPAN="2"><FONT COLOR="white"><B>ROOMMATE_POSTS</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#e2f0d9"><B>PK</B></TD><TD>post_id</TD></TR>
+      <TR><TD BGCOLOR="#e2f0d9"><B>FK</B></TD><TD>author_user_id → USERS.user_id</TD></TR>
+    </TABLE>>];
+  images [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#d6b656">
+      <TR><TD BGCOLOR="#9a7b18" COLSPAN="2"><FONT COLOR="white"><B>POST_IMAGES</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#fff2cc"><B>PK</B></TD><TD>image_id</TD></TR>
+      <TR><TD BGCOLOR="#fff2cc"><B>FK</B></TD><TD>post_id → ROOMMATE_POSTS.post_id</TD></TR>
+    </TABLE>>];
+  seeker [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#9673a6">
+      <TR><TD BGCOLOR="#674b78" COLSPAN="2"><FONT COLOR="white"><B>SEEKER_LIFESTYLES</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#e1d5e7"><B>PK + FK</B></TD><TD>post_id → ROOMMATE_POSTS.post_id</TD></TR>
+      <TR><TD BGCOLOR="#f5eff8" COLSPAN="2">One row per seeker listing</TD></TR>
+    </TABLE>>];
+  household [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#9673a6">
+      <TR><TD BGCOLOR="#674b78" COLSPAN="2"><FONT COLOR="white"><B>HOUSEHOLD_RULES</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#e1d5e7"><B>PK + FK</B></TD><TD>post_id → ROOMMATE_POSTS.post_id</TD></TR>
+      <TR><TD BGCOLOR="#f5eff8" COLSPAN="2">One row per room-offer listing</TD></TR>
+    </TABLE>>];
+  favorites [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#b85450">
+      <TR><TD BGCOLOR="#9e3d39" COLSPAN="2"><FONT COLOR="white"><B>FAVORITES — JUNCTION</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#f8cecc"><B>PK</B></TD><TD>favorite_id</TD></TR>
+      <TR><TD BGCOLOR="#f8cecc"><B>FK</B></TD><TD>user_id → USERS.user_id</TD></TR>
+      <TR><TD BGCOLOR="#f8cecc"><B>FK</B></TD><TD>post_id → ROOMMATE_POSTS.post_id</TD></TR>
+      <TR><TD BGCOLOR="#fff5f4"><B>UQ</B></TD><TD>(user_id, post_id)</TD></TR>
+    </TABLE>>];
+  conversations [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#9673a6">
+      <TR><TD BGCOLOR="#674b78" COLSPAN="2"><FONT COLOR="white"><B>CONVERSATIONS</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#e1d5e7"><B>PK</B></TD><TD>conversation_id</TD></TR>
+      <TR><TD BGCOLOR="#e1d5e7"><B>FK</B></TD><TD>post_id → ROOMMATE_POSTS.post_id</TD></TR>
+      <TR><TD BGCOLOR="#e1d5e7"><B>FK</B></TD><TD>starter_user_id → USERS.user_id</TD></TR>
+      <TR><TD BGCOLOR="#f5eff8"><B>UQ</B></TD><TD>(post_id, starter_user_id)</TD></TR>
+    </TABLE>>];
+  messages [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="9" COLOR="#666666">
+      <TR><TD BGCOLOR="#4b5563" COLSPAN="2"><FONT COLOR="white"><B>MESSAGES</B></FONT></TD></TR>
+      <TR><TD BGCOLOR="#e5e7eb"><B>PK</B></TD><TD>message_id</TD></TR>
+      <TR><TD BGCOLOR="#e5e7eb"><B>FK</B></TD><TD>conversation_id → CONVERSATIONS.conversation_id</TD></TR>
+      <TR><TD BGCOLOR="#e5e7eb"><B>FK</B></TD><TD>sender_user_id → USERS.user_id</TD></TR>
+    </TABLE>>];
+
+  users -> posts [label="authors (1:N)"];
+  posts -> images [label="has (1:N)"];
+  posts -> seeker [label="seeker subtype (1:0..1)", arrowhead=odottee];
+  posts -> household [label="offer subtype (1:0..1)", arrowhead=odottee];
+  users -> favorites [label="saves (1:N)"];
+  posts -> favorites [label="saved listing (1:N)"];
+  posts -> conversations [label="about (1:N)"];
+  users -> conversations [label="starts (1:N)"];
+  conversations -> messages [label="contains (1:N)"];
+  users -> messages [label="sends (1:N)"];
+}
